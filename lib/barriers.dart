@@ -5,7 +5,7 @@ class MyBarrier extends StatelessWidget {
   final outerColor;
   final child;
 
-  MyBarrier({this.innerColor, this.outerColor, this.child});
+  const MyBarrier({this.innerColor, this.outerColor, this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class MyBarrier extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(6),
         child: Container(
-          padding: EdgeInsets.all(5),
+          padding: const EdgeInsets.all(5),
           color: outerColor,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),

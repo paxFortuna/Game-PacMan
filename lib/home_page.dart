@@ -9,22 +9,15 @@ import 'barriers.dart';
 import 'ghost.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
-
   @override
-  State<HomePage> createState() => _HomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  static int numberOfSquares = numberInRow * 17;
   static int numberInRow = 11;
-  int numberOfSquares = numberInRow * 17;
 
-  int player = 166;
-  int ghost = -1;
-  bool mouthClosed = true;
-  int score = 0;
-
-  List<int> barriers = [
+  static List<int> barriers = [
     0,
     1,
     2,
@@ -43,7 +36,6 @@ class _HomePageState extends State<HomePage> {
     55,
     66,
     77,
-    88,
     99,
     110,
     121,
@@ -69,7 +61,6 @@ class _HomePageState extends State<HomePage> {
     131,
     120,
     109,
-    98,
     87,
     76,
     65,
@@ -77,9 +68,64 @@ class _HomePageState extends State<HomePage> {
     43,
     32,
     21,
+    78,
+    79,
+    80,
+    100,
+    101,
+    102,
+    84,
+    85,
+    86,
+    106,
+    107,
+    108,
+    24,
+    35,
+    46,
+    57,
+    30,
+    41,
+    52,
+    63,
+    81,
+    70,
+    59,
+    61,
+    72,
+    83,
+    26,
+    28,
+    37,
+    38,
+    39,
+    123,
+    134,
+    145,
+    156,
+    129,
+    140,
+    151,
+    162,
+    103,
+    114,
+    125,
+    105,
+    116,
+    127,
+    147,
+    148,
+    149,
+    158,
+    160
   ];
 
   List<int> food = [];
+  int player = 166;
+  int ghost = -1;
+  bool preGame = true;
+  bool mouthClosed = true;
+  int score = 0;
 
   void getFood() {
     for (int i = 0; i < numberOfSquares; i++) {
@@ -93,14 +139,22 @@ class _HomePageState extends State<HomePage> {
   bool gameStarted = false;
 
   void startGame() {
-    print(MediaQuery.of(context).size.width);
+    // print(MediaQuery.of(context).size.width);
+    preGame = false;
     moveGhost();
     gameStarted = true;
     getFood();
-    Duration duration = const Duration(milliseconds: 120);
-    Timer.periodic(duration, (timer) {
+
+    //Duration duration = const Duration(milliseconds: 120);
+
+    Timer.periodic(const Duration(milliseconds: 120), (timer) {
+      setState(() {
+        mouthClosed = !mouthClosed;
+      });
+
       if (food.contains(player)) {
         food.remove(player);
+        score++;
       }
 
       switch (direction) {
@@ -110,17 +164,14 @@ class _HomePageState extends State<HomePage> {
 
         case "up":
           moveUp();
-
           break;
 
         case "left":
           moveLeft();
-
           break;
 
         case "down":
           moveDown();
-
           break;
       }
     });
@@ -207,113 +258,126 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: SizedBox(
+        child: Container(
           width: 400,
           child: Column(
             children: [
               Container(
-                height: 35,
-                child: GestureDetector(
-                  onTap: startGame,
-                  child: Text(
-                    "P L A Y",
-                    style: TextStyle(
-                      color: Colors.grey[300],
-                      fontSize: 20,
+                padding: const EdgeInsets.only(top: 15),
+                //color: Colors.green,
+                height: 45,
+                child: Text(
+                  "P A C K  M A N",
+                  style: TextStyle(
+                    color: Colors.grey[300],
+                    fontSize: 30,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 8,
+                child: Center(
+                  child: Container(
+                    child: GestureDetector(
+                      onVerticalDragUpdate: (details) {
+                        if (details.delta.dy > 0) {
+                          direction = "down";
+                        } else if (details.delta.dy < 0) {
+                          direction = "up";
+                        }
+                      },
+                      onHorizontalDragUpdate: (details) {
+                        if (details.delta.dx > 0) {
+                          direction = "right";
+                        } else if (details.delta.dx < 0) {
+                          direction = "left";
+                        }
+                      },
+                      child: Container(
+                        child: GridView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: numberOfSquares,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: numberInRow),
+                            itemBuilder: (BuildContext context, int index) {
+                              if (player == index) {
+                                if (!mouthClosed) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Container(
+                                        decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.yellow,
+                                    )),
+                                  );
+                                } else {
+                                  if (direction == "right") {
+                                    return PacmanDude();
+                                  } else if (direction == "up") {
+                                    return Transform.rotate(
+                                        angle: 3 * pi / 2, child: PacmanDude());
+                                  } else if (direction == "left") {
+                                    return Transform.rotate(
+                                        angle: pi, child: PacmanDude());
+                                  } else if (direction == "down") {
+                                    return Transform.rotate(
+                                        angle: pi / 2, child: PacmanDude());
+                                  }
+                                }
+                              } else if (ghost == index) {
+                                return Ghost();
+                              } else if (barriers.contains(index)) {
+                                return MyBarrier(
+                                  innerColor: Colors.blue[800],
+                                  outerColor: Colors.blue[900],
+                                  //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
+                                );
+                              } else if (food.contains(index) || !gameStarted) {
+                                return MyPixel(
+                                  innerColor: Colors.yellow,
+                                  outerColor: Colors.black,
+                                  //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
+                                );
+                              } else {
+                                return MyPixel(
+                                  innerColor: Colors.black,
+                                  outerColor: Colors.black,
+                                  //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
+                                );
+                              }
+                              return Container();
+                            }),
+                      ),
                     ),
                   ),
                 ),
               ),
               Expanded(
-                // flex: 5,
                 child: Container(
-                  child: GestureDetector(
-                    onVerticalDragUpdate: (details) {
-                      if (details.delta.dy > 0) {
-                        direction = "down";
-                      } else if (details.delta.dy < 0) {
-                        direction = "up";
-                      }
-                    },
-                    onHorizontalDragUpdate: (details) {
-                      if (details.delta.dx > 0) {
-                        direction = "right";
-                      } else if (details.delta.dx < 0) {
-                        direction = "left";
-                      }
-                    },
-                    child: Container(
-                      child: GridView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: numberOfSquares,
-                          gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: numberInRow),
-                          itemBuilder: (BuildContext context, int index) {
-                            if (player == index) {
-                              if (!mouthClosed) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(4),
-                                  child: Container(
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Colors.yellow,
-                                      )),
-                                );
-                              } else {
-                                if (direction == "right") {
-                                  return PacmanDude();
-                                } else if (direction == "up") {
-                                  return Transform.rotate(
-                                      angle: 3 * pi / 2, child: PacmanDude());
-                                } else if (direction == "left") {
-                                  return Transform.rotate(
-                                      angle: pi, child: PacmanDude());
-                                } else if (direction == "down") {
-                                  return Transform.rotate(
-                                      angle: pi / 2, child: PacmanDude());
-                                }
-                              }
-                            } else if (ghost == index) {
-                              return Ghost();
-                            } else if (barriers.contains(index)) {
-                              return MyBarrier(
-                                innerColor: Colors.blue[800],
-                                outerColor: Colors.blue[900],
-                                //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
-                              );
-                            } else if (food.contains(index) || !gameStarted) {
-                              return MyPixel(
-                                innerColor: Colors.yellow,
-                                outerColor: Colors.black,
-                                //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
-                              );
-                            } else {
-                              return MyPixel(
-                                innerColor: Colors.black,
-                                outerColor: Colors.black,
-                                //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
-                              );
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Container(
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.yellow,
-                                  )),
-                            );
-                          }),
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Text(
+                        "Score: $score",
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 40),
+                      ),
+                      GestureDetector(
+                        onTap: startGame,
+                        child: const Text(
+                          "P L A Y",
+                          style: TextStyle(color: Colors.white, fontSize: 40),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-
-        ],
+            ],
+          ),
+        ),
       ),
-    ),
-    ),
     );
   }
-
 }
