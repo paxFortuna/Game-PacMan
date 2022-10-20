@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:game_pacman/player.dart';
 import 'package:game_pacman/path.dart';
-import 'package:game_pacman/pixel.dart';
 
 import 'barriers.dart';
 import 'ghost.dart';
+import 'pacman.dart';
+import 'pixel.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,9 +15,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static int numberOfSquares = numberInRow * 17;
-  static int numberInRow = 11;
-
   static List<int> barriers = [
     0,
     1,
@@ -121,12 +118,12 @@ class _HomePageState extends State<HomePage> {
     160
   ];
 
-  int player = numberInRow * 15 + 1; // 166;
-  int ghost = -1;
-  bool preGame = true;
+  static int numberOfSquares = numberInRow * 17;
+  static int numberInRow = 11;
+  int player = numberInRow * 15 + 1;
+  int ghost = numberInRow * 2 - 2;
   bool mouthClosed = false;
   int score = 0;
-
   List<int> food = [];
 
   void getFood() {
@@ -137,79 +134,54 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  String direction = "right";
   bool gameStarted = false;
-  String direction = "right"; // default 방향
 
   void startGame() {
-    // print(MediaQuery.of(context).size.width);
-    preGame = false;
+
     moveGhost();
     gameStarted = true;
     getFood();
+    Duration duration = const Duration(milliseconds: 120);
 
-    //Duration duration = const Duration(milliseconds: 120);
-
-    Timer.periodic(const Duration(milliseconds: 150), (timer) {
-
-      // pacman 입 동작
+    Timer.periodic(duration, (timer) {
       setState(() {
         mouthClosed = !mouthClosed;
       });
 
-      // packman이 음식 사라지고, 점수 추가하기
       if (food.contains(player)) {
         food.remove(player);
         score++;
       }
 
-      if (player == ghost) {
-        ghost = -1;
-      }
-
-      // 이동 방향
       switch (direction) {
         case "right":
           moveRight();
           break;
+
         case "up":
           moveUp();
           break;
+
         case "left":
           moveLeft();
           break;
+
         case "down":
           moveDown();
           break;
       }
-
-      // 벽이 없을 때 이동
-      if (!barriers.contains(player + 1)) {
-        setState(() {
-          player++;
-        });
-      }
-
-
     });
   }
 
-  // pack 우로 이동
   void moveRight() {
     setState(() {
       if (!barriers.contains(player + 1)) {
-        player++;
+        player += 1;
       }
     });
   }
-  // pack 좌로 이동
-  void moveLeft() {
-    setState(() {
-      if (!barriers.contains(player - 1)) {
-        player--;
-      }
-    });
-  }
-  // pack 위로 이동
+
   void moveUp() {
     setState(() {
       if (!barriers.contains(player - numberInRow)) {
@@ -217,7 +189,15 @@ class _HomePageState extends State<HomePage> {
       }
     });
   }
-  // pack 아래로 이동
+
+  void moveLeft() {
+    setState(() {
+      if (!barriers.contains(player - 1)) {
+        player -= 1;
+      }
+    });
+  }
+
   void moveDown() {
     setState(() {
       if (!barriers.contains(player + numberInRow)) {
@@ -226,8 +206,8 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // ghost moving
   String ghostDirection = "left"; // initial
-
   void moveGhost() {
     Duration ghostSpeed = const Duration(milliseconds: 500);
     Timer.periodic(ghostSpeed, (timer) {
@@ -249,16 +229,19 @@ class _HomePageState extends State<HomePage> {
             ghost++;
           });
           break;
+
         case "up":
           setState(() {
             ghost -= numberInRow;
           });
           break;
+
         case "left":
           setState(() {
             ghost--;
           });
           break;
+
         case "down":
           setState(() {
             ghost += numberInRow;
@@ -273,123 +256,101 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: SizedBox(
+        child: Container(
           width: 400,
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.only(top: 15),
                 //color: Colors.green,
-                height: 45,
+                height: 35,
                 child: Text(
-                  "P A C K  M A N",
-                  style: TextStyle(
-                    color: Colors.grey[300],
-                    fontSize: 30,
-                  ),
+                  "P L A Y",
+                  style: TextStyle(color: Colors.grey[300], fontSize: 20),
                 ),
               ),
               Expanded(
-                flex: 5,
+                flex: 8,
                 child: Center(
-                  child: GestureDetector(
-                    // pacman이 세로 벽에 부딪혔을 때 반응
-                    onVerticalDragUpdate: (details) {
-                      if (details.delta.dy > 0) {
-                        direction = "down";
-                      } else if (details.delta.dy < 0) {
-                        direction = "up";
-                      }
-                      print(direction);
-                    },
-                    // pacman이 가로 벽에 부딪혔을 때 반응
-                    onHorizontalDragUpdate: (details) {
-                      if (details.delta.dx > 0) {
-                        direction = "right";
-                      } else if (details.delta.dx < 0) {
-                        direction = "left";
-                      }
-                    },
-                    child: GridView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: numberOfSquares,
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: numberInRow),
-
-                        itemBuilder: (BuildContext context, int index) {
-                          if(mouthClosed && player == index){
-                            return Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  color: Colors.yellow,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            );
-                          }
-                          else if (player == index) {
-                            switch(direction) {
-                              case "left":
-                                return Transform.rotate(
-                                  angle: pi,
-                                  child: MyPlayer(),);
-                              case "right":
-                                return MyPlayer();
-                              case "up":
-                                return Transform.rotate(
-                                  angle: 3 * pi / 2,
-                                  child: MyPlayer(),
+                  child: Container(
+                    child: GestureDetector(
+                      onVerticalDragUpdate: (details) {
+                        if (details.delta.dy > 0) {
+                          direction = "down";
+                        } else if (details.delta.dy < 0) {
+                          direction = "up";
+                        }
+                      },
+                      onHorizontalDragUpdate: (details) {
+                        if (details.delta.dx > 0) {
+                          direction = "right";
+                        } else if (details.delta.dx < 0) {
+                          direction = "left";
+                        }
+                      },
+                      child: Container(
+                        child: GridView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: numberOfSquares,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: numberInRow),
+                            itemBuilder: (BuildContext context, int index) {
+                              if (player == index) {
+                                if (!mouthClosed) {
+                                  return Padding(
+                                    padding: const EdgeInsets.all(4),
+                                    child: Container(
+                                        decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.yellow,
+                                    )),
+                                  );
+                                } else {
+                                  if (direction == "right") {
+                                    return PacmanDude();
+                                  } else if (direction == "up") {
+                                    return Transform.rotate(
+                                      angle: 3 * pi / 2,
+                                      child: PacmanDude(),
+                                    );
+                                  } else if (direction == "left") {
+                                    return Transform.rotate(
+                                      angle: pi,
+                                      child: PacmanDude(),
+                                    );
+                                  } else if (direction == "down") {
+                                    return Transform.rotate(
+                                      angle: pi / 2,
+                                      child: PacmanDude(),
+                                    );
+                                  }
+                                }
+                              } else if (ghost == index) {
+                                return Ghost();
+                              } else if (barriers.contains(index)) {
+                                return MyBarrier(
+                                  innerColor: Colors.blue[800],
+                                  outerColor: Colors.blue[900],
+                                  //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
                                 );
-                              case "down":
-                                return Transform.rotate(
-                                  angle: pi / 2,
-                                  child: MyPlayer(),
+                              } else if (food.contains(index) || !gameStarted) {
+                                return MyPixel(
+                                  innerColor: Colors.yellow,
+                                  outerColor: Colors.black,
+                                  //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
                                 );
-                              default: return MyPlayer();
-                            }
-
-                             // if (direction == "right") {
-                             //    return MyPlayer();
-                             //  } else if (direction == "up") {
-                             //    return Transform.rotate(
-                             //      angle: 3 * pi / 2,
-                             //      child: MyPlayer(),
-                             //    );
-                             //  } else if (direction == "left") {
-                             //    return Transform.rotate(
-                             //      angle: pi,
-                             //      child: MyPlayer(),
-                             //    );
-                             //  } else if (direction == "down") {
-                             //    return Transform.rotate(
-                             //      angle: pi / 2,
-                             //      child: MyPlayer(),
-                             //    );
-                             //  }
-                            // }
-                          // } else if (ghost == index) {
-                          //   return Ghost();
-                          } else if (barriers.contains(index)) {
-                            return MyPixel(
-                              innerColor: Colors.blue[800],
-                              outerColor: Colors.blue[900],
-                              //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
-                            );
-                          } else if (food.contains(index) || !gameStarted) {
-                            return MyPath(
-                              innerColor: Colors.yellow,
-                              outerColor: Colors.black,
-                              //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
-                            );
-                          } else {
-                            return MyPath(
-                              innerColor: Colors.yellow,
-                              outerColor: Colors.black,
-                              //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
-                            );
-                          }
-                        }),
+                              } else {
+                                return MyPixel(
+                                  innerColor: Colors.black,
+                                  outerColor: Colors.black,
+                                  //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
+                                );
+                              }
+                              return MyPath();
+                            }),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -399,8 +360,7 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Text(
                       "Score: $score",
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 40),
+                      style: const TextStyle(color: Colors.white, fontSize: 40),
                     ),
                     GestureDetector(
                       onTap: startGame,
