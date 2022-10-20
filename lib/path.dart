@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class MyBarrier extends StatelessWidget {
+class MyPath extends StatelessWidget {
   final innerColor;
   final outerColor;
   final child;
 
-  MyBarrier({this.innerColor, this.outerColor, this.child});
+  MyPath({this.innerColor, this.outerColor, this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class MyBarrier extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(6),
         child: Container(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(10),
           color: outerColor,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),

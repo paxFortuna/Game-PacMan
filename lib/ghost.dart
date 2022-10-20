@@ -7,7 +7,7 @@ class Ghost extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Image.asset(
-        'assets/ghost.png',
+        "assets/ghost.png",
       ),
     );
   }
