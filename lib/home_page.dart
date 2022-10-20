@@ -120,9 +120,11 @@ class _HomePageState extends State<HomePage> {
 
   static int numberOfSquares = numberInRow * 17;
   static int numberInRow = 11;
+
   int player = numberInRow * 15 + 1;
   int ghost = numberInRow * 2 - 2;
-  bool mouthClosed = false;
+
+  bool mouthClosed = true;
   int score = 0;
   List<int> food = [];
 
@@ -138,11 +140,12 @@ class _HomePageState extends State<HomePage> {
   bool gameStarted = false;
 
   void startGame() {
+    gameStarted = true;
 
     moveGhost();
-    gameStarted = true;
     getFood();
-    Duration duration = const Duration(milliseconds: 120);
+
+    Duration duration = const Duration(milliseconds: 150);
 
     Timer.periodic(duration, (timer) {
       setState(() {
@@ -154,19 +157,20 @@ class _HomePageState extends State<HomePage> {
         score++;
       }
 
+      if (player == ghost) {
+        ghost = -1;
+      }
+
       switch (direction) {
         case "right":
           moveRight();
           break;
-
         case "up":
           moveUp();
           break;
-
         case "left":
           moveLeft();
           break;
-
         case "down":
           moveDown();
           break;
@@ -177,7 +181,15 @@ class _HomePageState extends State<HomePage> {
   void moveRight() {
     setState(() {
       if (!barriers.contains(player + 1)) {
-        player += 1;
+        player++;
+      }
+    });
+  }
+
+  void moveLeft() {
+    setState(() {
+      if (!barriers.contains(player - 1)) {
+        player--;
       }
     });
   }
@@ -186,14 +198,6 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       if (!barriers.contains(player - numberInRow)) {
         player -= numberInRow;
-      }
-    });
-  }
-
-  void moveLeft() {
-    setState(() {
-      if (!barriers.contains(player - 1)) {
-        player -= 1;
       }
     });
   }
@@ -207,7 +211,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   // ghost moving
+
   String ghostDirection = "left"; // initial
+
   void moveGhost() {
     Duration ghostSpeed = const Duration(milliseconds: 500);
     Timer.periodic(ghostSpeed, (timer) {
@@ -256,101 +262,99 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: Container(
-          width: 400,
+        child: SizedBox(
+          width: double.infinity,
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.only(top: 15),
+                padding: const EdgeInsets.only(top: 20),
                 //color: Colors.green,
-                height: 35,
+                height: 55,
                 child: Text(
-                  "P L A Y",
-                  style: TextStyle(color: Colors.grey[300], fontSize: 20),
+                  "Tic Toc Tac",
+                  style: TextStyle(
+                    color: Colors.grey[300],
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Expanded(
-                flex: 8,
+                flex: 9,
                 child: Center(
-                  child: Container(
-                    child: GestureDetector(
-                      onVerticalDragUpdate: (details) {
-                        if (details.delta.dy > 0) {
-                          direction = "down";
-                        } else if (details.delta.dy < 0) {
-                          direction = "up";
-                        }
-                      },
-                      onHorizontalDragUpdate: (details) {
-                        if (details.delta.dx > 0) {
-                          direction = "right";
-                        } else if (details.delta.dx < 0) {
-                          direction = "left";
-                        }
-                      },
-                      child: Container(
-                        child: GridView.builder(
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: numberOfSquares,
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: numberInRow),
-                            itemBuilder: (BuildContext context, int index) {
-                              if (player == index) {
-                                if (!mouthClosed) {
-                                  return Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: Container(
-                                        decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.yellow,
-                                    )),
-                                  );
-                                } else {
-                                  if (direction == "right") {
-                                    return PacmanDude();
-                                  } else if (direction == "up") {
-                                    return Transform.rotate(
-                                      angle: 3 * pi / 2,
-                                      child: PacmanDude(),
-                                    );
-                                  } else if (direction == "left") {
-                                    return Transform.rotate(
-                                      angle: pi,
-                                      child: PacmanDude(),
-                                    );
-                                  } else if (direction == "down") {
-                                    return Transform.rotate(
-                                      angle: pi / 2,
-                                      child: PacmanDude(),
-                                    );
-                                  }
-                                }
-                              } else if (ghost == index) {
-                                return Ghost();
-                              } else if (barriers.contains(index)) {
-                                return MyBarrier(
-                                  innerColor: Colors.blue[800],
-                                  outerColor: Colors.blue[900],
-                                  //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
-                                );
-                              } else if (food.contains(index) || !gameStarted) {
-                                return MyPixel(
-                                  innerColor: Colors.yellow,
-                                  outerColor: Colors.black,
-                                  //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
-                                );
-                              } else {
-                                return MyPixel(
-                                  innerColor: Colors.black,
-                                  outerColor: Colors.black,
-                                  //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
-                                );
-                              }
-                              return MyPath();
-                            }),
-                      ),
-                    ),
+                  child: GestureDetector(
+                    onVerticalDragUpdate: (details) {
+                      if (details.delta.dy > 0) {
+                        direction = "down";
+                      } else if (details.delta.dy < 0) {
+                        direction = "up";
+                      }
+                    },
+                    onHorizontalDragUpdate: (details) {
+                      if (details.delta.dx > 0) {
+                        direction = "right";
+                      } else if (details.delta.dx < 0) {
+                        direction = "left";
+                      }
+                    },
+                    child: GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: numberOfSquares,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: numberInRow,
+                        ),
+                        itemBuilder: (BuildContext context, int index) {
+                          if (!mouthClosed && player == index) {
+                            return Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Container(
+                                  decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.yellow,
+                              )),
+                            );
+                          } else if (player == index) {
+                            if (direction == "right") {
+                              return PacmanDude();
+                            } else if (direction == "up") {
+                              return Transform.rotate(
+                                angle: 3 * pi / 2,
+                                child: PacmanDude(),
+                              );
+                            } else if (direction == "left") {
+                              return Transform.rotate(
+                                angle: pi,
+                                child: PacmanDude(),
+                              );
+                            } else if (direction == "down") {
+                              return Transform.rotate(
+                                angle: pi / 2,
+                                child: PacmanDude(),
+                              );
+                            }
+                          } else if (ghost == index) {
+                            return Ghost();
+                          } else if (barriers.contains(index)) {
+                            return MyBarrier(
+                              innerColor: Colors.blue[800],
+                              outerColor: Colors.blue[900],
+                              //child: Center(child: Text(index.toString(), ),
+                            );
+                          } else if (food.contains(index) || !gameStarted) {
+                            return MyPixel(
+                              innerColor: Colors.yellow,
+                              outerColor: Colors.black,
+                              //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
+                            );
+                          } else {
+                            return MyPixel(
+                              innerColor: Colors.black,
+                              outerColor: Colors.black,
+                              //child: Center(child: Text(index.toString(), style: TextStyle(fontSize: 10,color: Colors.white),)),
+                            );
+                          }
+                          return MyPath();
+                        }),
                   ),
                 ),
               ),
