@@ -14,6 +14,7 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+// omit: 147,
 class _HomePageState extends State<HomePage> {
   static List<int> barriers = [
     0,
@@ -111,7 +112,7 @@ class _HomePageState extends State<HomePage> {
     105,
     116,
     127,
-    147,
+
     148,
     149,
     158,
@@ -261,24 +262,23 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Text(
+        "P A C K M A N",
+        style: TextStyle(
+            color: Colors.grey[300],
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+            ),
+      ),
+        centerTitle: true,
+      ),
       body: Center(
         child: SizedBox(
           width: double.infinity,
           child: Column(
             children: [
-              Container(
-                padding: const EdgeInsets.only(top: 20),
-                //color: Colors.green,
-                height: 55,
-                child: Text(
-                  "Tic Toc Tac",
-                  style: TextStyle(
-                    color: Colors.grey[300],
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
               Expanded(
                 flex: 9,
                 child: Center(
@@ -309,9 +309,9 @@ class _HomePageState extends State<HomePage> {
                               padding: const EdgeInsets.all(4),
                               child: Container(
                                   decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.yellow,
-                              )),
+                                    shape: BoxShape.circle,
+                                    color: Colors.yellow,
+                                  )),
                             );
                           } else if (player == index) {
                             if (direction == "right") {
